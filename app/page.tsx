@@ -15,8 +15,7 @@ export default function Home() {
   }, []);
   return (
     <div>
-      {/* <SearchBar onSearch={handleSearch} /> */}
-
+      <div className="bg-cover bg-[url('/hero-1.png')] bg-center bg-no-repeat w-full h-[60vh]"></div>
       <MovieList movies={movies} />
     </div>
   );
