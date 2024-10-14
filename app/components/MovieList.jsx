@@ -21,7 +21,7 @@ const MovieList = ({ movies, title }) => {
               spaceBetween: 10,
             },
             600: {
-              slidesPerView: 6.5,
+              slidesPerView: 4.5,
               spaceBetween: 5,
             },
             480: {
