@@ -39,10 +39,10 @@ export default function Home() {
         });
 
         setMovies(moviesByGenre);
-        setLoading(false); // Turn off loading once data is fetched
+        setLoading(false);
       } catch (err) {
         setError(err.message);
-        setLoading(false); // Turn off loading if there's an error
+        setLoading(false);
       }
     };
 
@@ -60,10 +60,8 @@ export default function Home() {
         {genres.map((genre) => (
           <div key={genre} className="mb-8">
             {loading ? (
-              // Show SkeletonLoader while data is loading
               <SkeletonLoader title={genre} />
             ) : (
-              // Render MovieList only after data has loaded
               <MovieList title={genre} movies={movies[genre] || []} />
             )}
           </div>

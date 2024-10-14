@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Brukflix",
   description: "The best movie and series streaming platform with no ads😎",
 };
-
+import NavBar from "./components/NavBar";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -13,7 +13,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <NavBar></NavBar>
+
+        {children}
+      </body>
     </html>
   );
 }
