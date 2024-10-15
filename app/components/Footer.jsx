@@ -10,9 +10,6 @@ export default function Footer() {
         {/* Navigation Links */}
         <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8">
           <Link href="/" className="hover:underline">
-            Home
-          </Link>
-          <Link href="/movies" className="hover:underline">
             Movies
           </Link>
           <Link href="/series" className="hover:underline">
