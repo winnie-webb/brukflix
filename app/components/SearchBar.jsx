@@ -1,40 +1,59 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
+import MiniLoader from "./MiniLoader";
 
 export default function SearchComponent() {
-  const [searchQuery, setSearchQuery] = useState(""); // Search input state
-  const [results, setResults] = useState([]); // Store search results
-  const [isLoading, setIsLoading] = useState(false); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+  const searchContainerRef = useRef(null);
 
   // Handle search form submission
   const handleSearch = async (e) => {
     e.preventDefault();
-    setIsLoading(true); // Start loading state
+    setIsLoading(true);
+    setResults([]); // Clear previous results
+    setError(null); // Reset error state
+    setShowResults(false); // Hide results until new ones arrive
 
     try {
       const response = await fetch("/api/search", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ searchTerm: searchQuery.trim() }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ searchTerm: searchQuery }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch search results");
 
-      const data = await response.json(); // Parse response data
-      setResults(data); // Set results
+      const data = await response.json();
+      setResults(data);
+      setShowResults(true); // Show results when they arrive
     } catch (err) {
-      setError(err.message); // Set error
+      setError(err.message); // Handle any errors
     } finally {
-      setIsLoading(false); // Stop loading state
+      setIsLoading(false); // Stop loading indicator
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative w-[60%] m-auto ">
+    <div className="relative w-[60%] m-auto" ref={searchContainerRef}>
       {/* Search Form */}
       <form onSubmit={handleSearch} className="relative flex items-center">
         <input
@@ -53,22 +72,28 @@ export default function SearchComponent() {
       </form>
 
       {/* Search Results */}
-      <div className=" absolute bg-black w-full p-4 rounded-lg">
-        {isLoading && <p>Searching...</p>} {/* Loading Indicator */}
-        {error && <p className="text-red-500">{error}</p>} {/* Error Message */}
-        {/* Display Results */}
-        {results.titles.length > 0 ? (
-          <ul className="space-y-4 ">
-            {results.titles.slice(0, 8).map((title, index) => (
-              <span key={index} className=" text-sm font-bold block">
-                {title}
-              </span>
-            ))}
-          </ul>
-        ) : (
-          !isLoading && <p>No results found.</p>
-        )}
-      </div>
+      {isLoading && (
+        <div className="absolute bg-black w-full p-4 rounded-lg z-50">
+          <MiniLoader />
+        </div>
+      )}
+
+      {!isLoading && showResults && (
+        <div className="absolute bg-black w-full p-4 rounded-lg z-50">
+          {error && <p className="text-red-500">{error}</p>}
+          {results.titles?.length > 0 ? (
+            <ul className="space-y-4">
+              {results.titles.slice(0, 8).map((title, index) => (
+                <li key={index} className="text-[0.8rem] font-bold block">
+                  {title}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No results found.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
