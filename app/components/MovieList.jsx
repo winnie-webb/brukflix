@@ -7,7 +7,7 @@ const MovieList = ({ movies, title }) => {
   return (
     <>
       <h2 className="text-3xl font-medium p-2">{title}</h2>
-      <div className="p-4">
+      <div className="">
         <Swiper
           navigation
           pagination={{ clickable: true }}
