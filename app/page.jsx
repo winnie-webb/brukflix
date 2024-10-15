@@ -55,7 +55,7 @@ export default function Home() {
 
   return (
     <div>
-      <div className="bg-cover bg-[url('/hero-1.png')] bg-center bg-no-repeat w-full h-[80vh]"></div>
+      <div className="bg-cover bg-[url('/hero-1.png')] bg-center bg-no-repeat w-full h-[30vh] md:h-[40vh] lg:h-[75vh] "></div>
       <div className="p-4 md:p-10">
         {genres.map((genre) => (
           <div key={genre} className="mb-8">
