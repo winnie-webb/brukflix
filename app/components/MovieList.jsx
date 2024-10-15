@@ -12,6 +12,10 @@ const MovieList = ({ movies, title }) => {
           navigation
           pagination={{ clickable: true }}
           breakpoints={{
+            2500: {
+              slidesPerView: 17.5,
+              spaceBetween: 10,
+            },
             1400: {
               slidesPerView: 9.5,
               spaceBetween: 10,
