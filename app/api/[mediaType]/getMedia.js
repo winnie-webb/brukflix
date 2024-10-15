@@ -18,7 +18,6 @@ export default async function getMedia(
   const html = response.data;
   const $ = cheerio.load(html);
   const mediaDetails = [];
-  console.log(mediaType, mediaCategory, categorySpecifier);
   $(".mxwd:nth-child(4) .dflex div").each((index, element) => {
     const title = $(element).find("a").attr("title");
     const link = $(element).find("a").attr("href");
