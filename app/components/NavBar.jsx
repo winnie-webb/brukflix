@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AiOutlineMenu, AiOutlineUser, AiOutlineClose } from "react-icons/ai";
 import SearchBar from "./SearchBar";
+import { usePathname } from "next/navigation";
+
 const genres = [
   "Action",
   "Adventure",
@@ -34,13 +36,17 @@ const genres = [
 ]; // Genres list
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false); // Mobile menu state
-  const [activeLink, setActiveLink] = useState(""); // Active link state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const currentPath = usePathname();
 
-  // Set active link based on the current route
-  useEffect(() => {
-    setActiveLink(window.location.pathname);
-  }, []);
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
+  const isActiveLink = (link) => {
+    console.log(link === currentPath, link);
+    return currentPath === link;
+  };
 
   return (
     <nav className="z-50 flex items-center justify-between px-6 xl:px-20 py-4 bg-black text-white">
@@ -48,7 +54,7 @@ export default function Navbar() {
       <div className="items-center md:space-x-8 flex">
         <Link
           href="/"
-          className="text-3xl font-bold cursor-pointer  hidden md:flex"
+          className="text-3xl font-bold cursor-pointer hidden md:flex"
         >
           Brukflix
         </Link>
@@ -63,7 +69,7 @@ export default function Navbar() {
             <Link
               href="/"
               className={`${
-                activeLink === "/" ? "underline" : ""
+                isActiveLink("/") ? "underline underline-offset-8" : ""
               } hover:underline underline-offset-8`}
             >
               Movies
@@ -73,7 +79,7 @@ export default function Navbar() {
             <Link
               href="/series"
               className={`${
-                activeLink === "/series" ? "underline" : ""
+                isActiveLink("/series") ? "underline underline-offset-8" : ""
               } hover:underline underline-offset-8`}
             >
               Series
@@ -82,11 +88,12 @@ export default function Navbar() {
         </ul>
       </div>
 
-      <SearchBar></SearchBar>
+      <SearchBar />
+
       {/* Right Section: Profile and Menu */}
       <div className="flex items-center space-x-6">
         <AiOutlineUser className="text-2xl cursor-pointer" />
-        <button onClick={() => setMenuOpen(!menuOpen)}>
+        <button onClick={toggleMenu} aria-label="Toggle Menu">
           {menuOpen ? (
             <AiOutlineClose className="text-2xl" />
           ) : (
@@ -97,13 +104,13 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="absolute z-50 top-[3.7rem] left-0 w-full bg-black text-white p-4 pl-20 ">
+        <div className="absolute z-50 top-[3.7rem] left-0 w-full bg-black text-white p-4 pl-20">
           <ul className="flex flex-col space-y-4">
             <li>
               <Link
                 href="/"
-                className={` ${
-                  activeLink === "/" ? "underline" : ""
+                className={`${
+                  isActiveLink("/") ? "underline underline-offset-8" : ""
                 } hover:underline underline-offset-8`}
               >
                 Movies
@@ -113,7 +120,7 @@ export default function Navbar() {
               <Link
                 href="/series"
                 className={`${
-                  activeLink === "/series" ? "underline" : ""
+                  isActiveLink("/series") ? "underline underline-offset-8" : ""
                 } hover:underline underline-offset-8`}
               >
                 Series
