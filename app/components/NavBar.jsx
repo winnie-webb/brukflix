@@ -44,7 +44,6 @@ export default function Navbar() {
   };
 
   const isActiveLink = (link) => {
-    console.log(link === currentPath, link);
     return currentPath === link;
   };
 
