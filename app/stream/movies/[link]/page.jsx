@@ -16,7 +16,6 @@ const MoviesStream = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     const fetchStreamData = async () => {
       try {
@@ -27,7 +26,6 @@ const MoviesStream = () => {
           },
           body: JSON.stringify({ url }),
         });
-
         if (!response.ok) {
           throw new Error("Failed to fetch stream data");
         }
@@ -46,8 +44,11 @@ const MoviesStream = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex gap-2 items-center justify-center min-h-screen bg-black">
         <AiOutlineLoading3Quarters className="animate-spin text-white text-6xl" />
+        <p className="text-gray-300 text-xl font-semibold">
+          Getting video data...
+        </p>
       </div>
     );
   }
@@ -65,6 +66,11 @@ const MoviesStream = () => {
 
   return (
     <div className="bg-black min-h-screen text-white">
+      {!streamData && (
+        <p className="text-white text-3xl h-[100vh] flex items-center justify-center">
+          Please check your internet connection and refresh...
+        </p>
+      )}
       <div
         className="relative w-full h-[80vh] bg-cover bg-center"
         style={{ backgroundImage: `url(${streamData.posterLink})` }}
