@@ -87,8 +87,8 @@ export default function SearchComponent() {
               {results.data.slice(0, 8).map((result, index) => {
                 const isSeries = result.isSeries;
                 const link = isSeries
-                  ? `series/${result.link.split("/")[1]}`
-                  : `movies/${result.link.split("/")[3]}`; // Use raw link for movies
+                  ? `/stream/series/${result.link.split("/")[1]}`
+                  : `/stream/movies/${result.link.split("/")[3]}`;
 
                 return (
                   <Link href={link} key={index}>
