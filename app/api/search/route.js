@@ -7,16 +7,29 @@ export async function POST(req) {
   const { searchTerm } = await req.json();
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
-    // Navigate to the Goojara page with the search box
-    await page.goto("https://www.goojara.to", { waitUntil: "networkidle2" });
+    // Block unnecessary resources
+    await page.setRequestInterception(true);
+    page.on("request", (request) => {
+      const resourceType = request.resourceType();
+      if (["image", "stylesheet", "font", "media"].includes(resourceType)) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
+
+    await page.setViewport({ width: 1280, height: 800 });
+
+    await page.goto("https://www.goojara.to", {
+      waitUntil: "domcontentloaded",
+    });
 
     await page.type("#putin", searchTerm);
     await page.waitForSelector("#result");
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait to ensure content loads
-
+    await new Promise((resolve, reject) => setTimeout(resolve, 1000));
     const content = await page.content();
     const $ = cheerio.load(content);
     const data = await Promise.all(
@@ -30,15 +43,17 @@ export async function POST(req) {
             try {
               const response = await axios.get(link);
               const $$ = cheerio.load(response.data);
-              link = $$(".seho h1 a").attr("href");
+              const linkRef = $$(".seho h1 a").attr("href");
+              if (!linkRef) return;
+              link = linkRef;
             } catch (err) {
               console.error(`Failed to fetch series link: ${err.message}`);
             }
           }
-
+          console.log({ title, isSeries, link });
           return { title, link, isSeries };
         })
-        .get() // .get() extracts array from Cheerio map
+        .get()
     );
 
     await browser.close();

@@ -85,6 +85,7 @@ export default function SearchComponent() {
           {results.data?.length > 0 ? (
             <ul className="space-y-4">
               {results.data.slice(0, 8).map((result, index) => {
+                if (!result) return;
                 const isSeries = result.isSeries;
                 const link = isSeries
                   ? `/stream/series/${result.link.split("/")[1]}`
