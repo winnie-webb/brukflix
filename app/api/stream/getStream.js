@@ -6,11 +6,11 @@ export default async function getStream(url) {
 
   const waitForIframe = async (page, retries) => {
     try {
-      return await page.waitForSelector("iframe", { timeout: 10000 });
+      return await page.waitForSelector("iframe", { timeout: 5000 });
     } catch (error) {
       if (retries > 0) {
         console.warn(`Retrying... ${retries} attempts left.`);
-        await page.waitForTimeout(WAIT_TIME); // Wait before retrying
+        await new Promise((res) => setTimeout(res, WAIT_TIME)); // Wait before retrying
         return waitForIframe(page, retries - 1); // Retry
       }
       throw new Error("iframe not found after multiple attempts");

@@ -7,7 +7,7 @@ export async function POST(req) {
   const { searchTerm } = await req.json();
 
   try {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
     // Block unnecessary resources
@@ -50,7 +50,6 @@ export async function POST(req) {
               console.error(`Failed to fetch series link: ${err.message}`);
             }
           }
-          console.log({ title, isSeries, link });
           return { title, link, isSeries };
         })
         .get()
