@@ -13,7 +13,7 @@ export default async function getStream(url) {
         await new Promise((res) => setTimeout(res, WAIT_TIME)); // Wait before retrying
         return waitForIframe(page, retries - 1); // Retry
       }
-      throw new Error("iframe not found after multiple attempts");
+      throw new Error(error.message);
     }
   };
 
@@ -68,7 +68,7 @@ export default async function getStream(url) {
         await newPage.close();
       }
     } catch (e) {
-      console.warn("Play button not found or click failed.");
+      console.warn(e.message);
     }
 
     // Wait for the video element to appear

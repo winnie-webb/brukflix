@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { AiOutlineMenu, AiOutlineUser, AiOutlineClose } from "react-icons/ai";
 import SearchBar from "./SearchBar";

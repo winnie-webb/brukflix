@@ -29,7 +29,7 @@ export async function POST(req) {
 
     await page.type("#putin", searchTerm);
     await page.waitForSelector("#result");
-    await new Promise((resolve, reject) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const content = await page.content();
     const $ = cheerio.load(content);
     const data = await Promise.all(
