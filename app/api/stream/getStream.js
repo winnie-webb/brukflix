@@ -1,9 +1,10 @@
 import puppeteer from "puppeteer";
 
-export default async function getStream(url) {
+export default async function getStream(url, mediaType = "") {
   const MAX_RETRIES = 3;
   const WAIT_TIME = 5000;
 
+  // Retry logic for waiting on the iframe
   const waitForIframe = async (page, retries) => {
     try {
       return await page.waitForSelector("iframe", { timeout: 5000 });
@@ -13,7 +14,7 @@ export default async function getStream(url) {
         await new Promise((res) => setTimeout(res, WAIT_TIME)); // Wait before retrying
         return waitForIframe(page, retries - 1); // Retry
       }
-      throw new Error(error.message);
+      throw new Error("Iframe not found after multiple attempts");
     }
   };
 
@@ -40,6 +41,25 @@ export default async function getStream(url) {
     streamContent["posterLink"] = posterLink;
     streamContent["title"] = title;
     streamContent["desc"] = desc;
+
+    if (mediaType === "series") {
+      const seriesContent = await page.evaluate(() => {
+        const seasonNodes = document.querySelectorAll(".marl #drop a");
+        const episodeNodes = document.querySelectorAll(
+          "#sesh a:not(:first-child)"
+        );
+
+        // Convert NodeLists to arrays and extract hrefs
+        const seasonsLinks = Array.from(seasonNodes).map((season) =>
+          season.getAttribute("href")
+        );
+        const episodesLinks = Array.from(episodeNodes).map((episode) =>
+          episode.getAttribute("href")
+        );
+        return { seasonsLinks, episodesLinks };
+      });
+      streamContent["seriesContent"] = seriesContent;
+    }
 
     // Retry to find the iframe up to 3 times if needed
     const iframe = await waitForIframe(page, MAX_RETRIES);
@@ -68,7 +88,7 @@ export default async function getStream(url) {
         await newPage.close();
       }
     } catch (e) {
-      console.warn(e.message);
+      console.warn("Play button not found or click failed:", e.message);
     }
 
     // Wait for the video element to appear
@@ -87,6 +107,6 @@ export default async function getStream(url) {
     return streamContent;
   } catch (error) {
     console.error("Error while fetching video:", error.message);
-    return "";
+    return { error: error.message };
   }
 }
