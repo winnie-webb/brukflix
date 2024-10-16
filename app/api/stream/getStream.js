@@ -1,15 +1,31 @@
 import puppeteer from "puppeteer";
 
 export default async function getStream(url) {
+  const MAX_RETRIES = 3;
+  const WAIT_TIME = 5000;
+
+  const waitForIframe = async (page, retries) => {
+    try {
+      return await page.waitForSelector("iframe", { timeout: 10000 });
+    } catch (error) {
+      if (retries > 0) {
+        console.warn(`Retrying... ${retries} attempts left.`);
+        await page.waitForTimeout(WAIT_TIME); // Wait before retrying
+        return waitForIframe(page, retries - 1); // Retry
+      }
+      throw new Error("iframe not found after multiple attempts");
+    }
+  };
+
   try {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     const streamContent = {};
 
     // Open the main page
     await page.goto(url, { waitUntil: "networkidle2" });
 
-    // Wait for the iframe and extract its src URL
+    // Extract poster, title, and description
     const { posterLink, title, desc } = await page.evaluate(() => {
       const posterImg = document.querySelector("#poster a img");
       const posterLink = posterImg ? posterImg.getAttribute("src") : null;
@@ -24,20 +40,20 @@ export default async function getStream(url) {
     streamContent["posterLink"] = posterLink;
     streamContent["title"] = title;
     streamContent["desc"] = desc;
-    const iframe = await page.waitForSelector("iframe", { timeout: 10000 });
+
+    // Retry to find the iframe up to 3 times if needed
+    const iframe = await waitForIframe(page, MAX_RETRIES);
+
+    // Get video source link
     const linkToVideo = await iframe.evaluate((el) => el.src);
 
     // Open the iframe's video page
     await page.goto(linkToVideo, { waitUntil: "networkidle2" });
 
-    // Extract content from the iframe's page
-
+    // Attempt to click play button (if available)
     const playButtonSelector = ".play-button";
-
     try {
       await page.waitForSelector(playButtonSelector, { timeout: 5000 });
-
-      // Monitor for new tabs opened by clicking the play button
       const [newPage] = await Promise.all([
         new Promise((resolve) =>
           browser.once("targetcreated", async (target) => {
@@ -45,10 +61,9 @@ export default async function getStream(url) {
             resolve(newTab);
           })
         ),
-        page.click(playButtonSelector), // Trigger play button click
+        page.click(playButtonSelector),
       ]);
 
-      // Close the new tab if it opens
       if (newPage) {
         await newPage.close();
       }
@@ -58,7 +73,7 @@ export default async function getStream(url) {
 
     // Wait for the video element to appear
     const videoSelector = "video";
-    await page.waitForSelector(videoSelector, { timeout: 10000 });
+    await page.waitForSelector(videoSelector, { timeout: 5000 });
 
     // Extract video URL
     const videoURL = await page.evaluate(() => {

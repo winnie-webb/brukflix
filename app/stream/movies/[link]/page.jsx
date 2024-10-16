@@ -88,7 +88,6 @@ const MoviesStream = () => {
           config={{
             file: {
               attributes: {
-                controlsList: "nodownload",
                 autoPlay: true,
               },
             },
