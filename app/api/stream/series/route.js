@@ -9,6 +9,6 @@ export async function POST(req) {
     const streamContent = await getStream(url, "series");
     return NextResponse.json({ streamContent });
   } catch (err) {
-    return NextResponse.json({ error: err.message });
+    return NextResponse.json({ streamContent: "" });
   }
 }
