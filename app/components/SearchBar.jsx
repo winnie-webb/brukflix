@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import MiniLoader from "./MiniLoader";
+import Link from "next/link";
 
 export default function SearchComponent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,13 +82,22 @@ export default function SearchComponent() {
       {!isLoading && showResults && (
         <div className="absolute bg-black w-full p-4 rounded-lg z-50">
           {error && <p className="text-red-500">{error}</p>}
-          {results.titles?.length > 0 ? (
+          {results.data?.length > 0 ? (
             <ul className="space-y-4">
-              {results.titles.slice(0, 8).map((title, index) => (
-                <li key={index} className="text-[0.8rem] font-bold block">
-                  {title}
-                </li>
-              ))}
+              {results.data.slice(0, 8).map((result, index) => {
+                const isSeries = result.isSeries;
+                const link = isSeries
+                  ? `series/${result.link.split("/")[1]}`
+                  : `movies/${result.link.split("/")[3]}`; // Use raw link for movies
+
+                return (
+                  <Link href={link} key={index}>
+                    <li className="text-[0.8rem] p-2 rounded-lg hover:bg-[#141414] font-bold block">
+                      {result.title}
+                    </li>
+                  </Link>
+                );
+              })}
             </ul>
           ) : (
             <p>No results found.</p>
