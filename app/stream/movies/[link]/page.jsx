@@ -1,7 +1,9 @@
 "use client";
-import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { MdError } from "react-icons/md";
+import { usePathname } from "next/navigation";
 
 const MoviesStream = () => {
   const path = usePathname();
@@ -40,43 +42,58 @@ const MoviesStream = () => {
     };
 
     fetchStreamData();
-  }, []);
+  }, [url]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <AiOutlineLoading3Quarters className="animate-spin text-white text-6xl" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500 text-xl font-semibold">{error}</p>
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center">
+          <MdError className="text-red-600 text-6xl mx-auto mb-4" />
+          <p className="text-red-500 text-xl font-semibold">{error}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <ReactPlayer
-        url={streamData.videoURL}
-        controls
-        className="rounded-lg shadow-md"
-        width="100%"
-        height="auto"
-      />
-      <div className="flex gap-2 mt-20">
-        <img
-          src={streamData.posterLink}
-          alt={streamData.title}
-          className="w-full h-96 object-cover rounded-lg mb-4"
-        />
-        <div className="my-2">
-          <h1 className="text-3xl font-bold mb-2">{streamData.title}</h1>
-          <p className="text-gray-700 text-lg mb-4">{streamData.desc}</p>
+    <div className="bg-black min-h-screen text-white">
+      <div
+        className="relative w-full h-[80vh] bg-cover bg-center"
+        style={{ backgroundImage: `url(${streamData.posterLink})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/100"></div>
+        <div className="absolute bottom-0 left-0 p-8">
+          <h1 className="text-4xl md:text-5xl font-bold">{streamData.title}</h1>
+          <p className="text-lg md:text-xl max-w-2xl mt-4 text-gray-300">
+            {streamData.desc}
+          </p>
         </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto p-6 mt-8">
+        <ReactPlayer
+          url={streamData.videoURL}
+          controls
+          width="100%"
+          height="100%"
+          className="react-player"
+          config={{
+            file: {
+              attributes: {
+                controlsList: "nodownload",
+                autoPlay: true,
+              },
+            },
+          }}
+        />
       </div>
     </div>
   );
