@@ -4,7 +4,6 @@ import ReactPlayer from "react-player";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { MdError } from "react-icons/md";
 import { usePathname, useSearchParams } from "next/navigation"; // For parsing query params
-import Link from "next/link";
 import fetchStreamData from "./fetchStreamData";
 
 const SeriesStream = () => {
