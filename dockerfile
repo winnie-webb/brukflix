@@ -1,20 +1,17 @@
-# Use Node.js 18-alpine for a smaller image
-FROM node:18-alpine
+# Use Node.js 18 image
+FROM node:18
 
-# Install Chromium and necessary packages for Puppeteer
-RUN apk add --no-cache \
+# Install dependencies required by Puppeteer and Chromium
+RUN apt-get update && apt-get install -y \
     chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    bash \
-    udev
+    libnss3 libatk1.0-0 libatk-bridge2.0-0 \
+    libxcomposite1 libxrandr2 libgbm1 xdg-utils \
+    fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg \
+    fonts-kacst --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set Puppeteer to use the installed Chromium
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+# Set Puppeteer to use installed Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Set working directory
 WORKDIR /usr/src/app
