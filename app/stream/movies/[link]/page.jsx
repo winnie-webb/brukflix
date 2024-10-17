@@ -8,6 +8,26 @@ import { usePathname } from "next/navigation";
 const MoviesStream = () => {
   const path = usePathname();
   const url = `https://ww1.goojara.to/${path.split("/")[3]}`;
+  const [loadingInfo, setLoadingInfo] = useState("Getting video data...");
+  useEffect(() => {
+    const timeout1 = setTimeout(
+      () => setLoadingInfo("Rendering video and content"),
+      2000
+    );
+    const timeout2 = setTimeout(
+      () => setLoadingInfo("Sorry it's taking so long...😅"),
+      4000
+    );
+    const timeout3 = setTimeout(
+      () => setLoadingInfo("Almost there...🙄"),
+      6000
+    );
+    return () => {
+      clearTimeout(timeout1); // Clean up timers on component unmount
+      clearTimeout(timeout2);
+      clearTimeout(timeout3);
+    };
+  }, []);
   const [streamData, setStreamData] = useState({
     title: "",
     desc: "",
@@ -46,9 +66,7 @@ const MoviesStream = () => {
     return (
       <div className="flex gap-2 items-center justify-center min-h-screen bg-black">
         <AiOutlineLoading3Quarters className="animate-spin text-white text-6xl" />
-        <p className="text-gray-300 text-xl font-semibold">
-          Getting video data...
-        </p>
+        <p className="text-gray-300 text-xl font-semibold">{loadingInfo}</p>
       </div>
     );
   }
