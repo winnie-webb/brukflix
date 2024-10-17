@@ -11,7 +11,7 @@ export async function POST(req) {
       const episodeLink = $(elem).attr("href");
       episodesLinks.push(episodeLink);
     });
-
+    console.log(episodesLinks);
     return NextResponse.json({ episodesLinks });
   } catch (err) {
     return NextResponse.json({ episodesLinks: "" });

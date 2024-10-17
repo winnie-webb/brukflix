@@ -3,13 +3,17 @@ import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { MdError } from "react-icons/md";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation"; // For parsing query params
 import Link from "next/link";
 import fetchStreamData from "./fetchStreamData";
 
 const SeriesStream = () => {
   const path = usePathname();
+  const searchParams = useSearchParams(); // Get query params from the URL
+
   const url = `https://ww1.goojara.to/${path.split("/")[3]}`;
+
+  // Initialize state for stream data, loading, and errors
   const [streamData, setStreamData] = useState({
     title: "",
     desc: "",
@@ -20,16 +24,39 @@ const SeriesStream = () => {
       episodesLinks: [],
     },
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentSeason, setCurrentSeason] = useState(0); // Index of selected season
-  const [currentPage, setCurrentPage] = useState(1); // For episode pagination
-  const episodesPerPage = 5; // Limit episodes per page
+
+  // State for current season and episode
+  const [currentSeason, setCurrentSeason] = useState(0);
+  const [currentEpisode, setCurrentEpisode] = useState(null);
+  const [seasonLoading, setSeasonLoading] = useState(false); // Loading state for season change
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const episodesPerPage = 5;
+
+  // Fetch stream data when the component mounts
   useEffect(() => {
     fetchStreamData(url, setStreamData, setLoading, setError);
   }, [url]);
 
-  // Render loading state
+  // Parse season and episode from URL on load
+  useEffect(() => {
+    const season = searchParams.get("season");
+    const episode = searchParams.get("episode");
+
+    // Ensure season and episode are numbers, adjusting for zero-indexing
+    if (season) {
+      setCurrentSeason(Number(season) - 1); // season in query is 1-based, so adjust by -1
+    }
+
+    if (episode) {
+      setCurrentEpisode(Number(episode) - 1); // episode in query is 1-based, so adjust by -1
+    }
+  }, [searchParams]);
+
   if (loading) {
     return (
       <div className="flex gap-2 items-center justify-center min-h-screen bg-black">
@@ -41,7 +68,6 @@ const SeriesStream = () => {
     );
   }
 
-  // Handle case when there's an error or empty streamData
   if (error || !streamData || (!streamData.title && !streamData.videoURL)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
@@ -57,6 +83,7 @@ const SeriesStream = () => {
 
   const { posterLink, title, desc, videoURL, seriesContent } = streamData;
 
+  // Slice the episodes for the current page
   const episodesToDisplay = seriesContent.episodesLinks.slice(
     (currentPage - 1) * episodesPerPage,
     currentPage * episodesPerPage
@@ -75,14 +102,14 @@ const SeriesStream = () => {
   const handleSeasonChange = async (e) => {
     const selectedSeason = Number(e.target.value);
     setCurrentSeason(selectedSeason);
-    setCurrentPage(1); // Reset pagination to page 1 when changing seasons
+    setCurrentPage(1);
+    setSeasonLoading(true); // Enable loading when switching season
 
     const currentSeasonURL = `${
       streamData.seriesContent.seasonsLinks[selectedSeason].split("?")[0]
     }?s=${selectedSeason + 1}`;
 
     try {
-      // Fetch data for the selected season
       const response = await fetch("/api/stream/series/season", {
         method: "POST",
         headers: {
@@ -102,12 +129,22 @@ const SeriesStream = () => {
         ...prevData,
         seriesContent: {
           ...prevData.seriesContent,
-          episodesLinks: data.episodesLinks, // Update episodes for the selected season
+          episodesLinks: data.episodesLinks,
         },
       }));
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSeasonLoading(false); // Disable loading after fetch is done
     }
+  };
+
+  const handleEpisodeClick = (episodeIndex, episodeLink) => {
+    setCurrentEpisode(episodeIndex);
+    // Navigate to new URL with season and episode in query params
+    window.location.href = `/stream/series${episodeLink}?season=${
+      currentSeason + 1
+    }&episode=${episodeIndex + 1}`;
   };
 
   return (
@@ -165,43 +202,60 @@ const SeriesStream = () => {
           </select>
         </div>
 
-        {/* Episode List with Pagination */}
-        <h2 className="text-2xl font-semibold mb-4">Episodes</h2>
-        <div className="space-y-4">
-          {episodesToDisplay.map((episodeLink, index) => (
-            <Link
-              href={`/stream/series${episodeLink}`} // Make sure to use the correct episode link
-              key={index}
-              className="block"
-            >
-              <div className="bg-gray-800 hover:bg-gray-700 p-4 rounded-md">
-                Episode {(currentPage - 1) * episodesPerPage + index + 1}{" "}
-                {/* Adjust episode number */}
-              </div>
-            </Link>
-          ))}
-        </div>
+        {seasonLoading ? (
+          <div className="flex gap-2 items-center justify-center">
+            <AiOutlineLoading3Quarters className="animate-spin text-white text-4xl" />
+            <p className="text-gray-300 text-lg font-semibold">Loading...</p>
+          </div>
+        ) : (
+          <>
+            {/* Episode List with Pagination */}
+            <h2 className="text-2xl font-semibold mb-4">Episodes</h2>
+            <div className="space-y-4">
+              {episodesToDisplay.map((episodeLink, index) => {
+                const globalEpisodeIndex =
+                  (currentPage - 1) * episodesPerPage + index;
+                return (
+                  <div
+                    key={index}
+                    onClick={() =>
+                      handleEpisodeClick(globalEpisodeIndex, episodeLink)
+                    }
+                    className={`block cursor-pointer ${
+                      currentEpisode === globalEpisodeIndex
+                        ? "bg-gray-600"
+                        : "bg-gray-800 hover:bg-gray-700"
+                    } p-4 rounded-md`}
+                  >
+                    Episode {globalEpisodeIndex + 1}
+                  </div>
+                );
+              })}
+            </div>
 
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center mt-6">
-          <button
-            className="bg-gray-800 text-white p-2 rounded-md"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <span className="text-gray-400">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="bg-gray-800 text-white p-2 rounded-md"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
+            {/* Pagination */}
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 ${
+                  currentPage === 1 ? "bg-gray-600" : "bg-gray-800"
+                } text-white rounded-md`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 ${
+                  currentPage === totalPages ? "bg-gray-600" : "bg-gray-800"
+                } text-white rounded-md`}
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
