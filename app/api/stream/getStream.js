@@ -1,4 +1,5 @@
 import getBrowser from "../utils/getBrowser";
+
 export default async function getStream(url, mediaType = "") {
   try {
     const browser = await getBrowser();
@@ -43,10 +44,28 @@ export default async function getStream(url, mediaType = "") {
       streamContent["seriesContent"] = seriesContent;
     }
 
-    // Retry to find the iframe up to 3 times if needed
-    const iframe = await page.waitForSelector("iframe", { timeout: 10000 });
+    let iframe;
+    let attempt = 0;
+    const maxAttempts = 2;
 
-    // Get video source link
+    // Retry to find the iframe, refreshing the page if not found
+    while (attempt < maxAttempts) {
+      try {
+        iframe = await page.waitForSelector("iframe", { timeout: 5000 });
+        if (iframe) break;
+      } catch (e) {
+        attempt++;
+        console.log(e.message);
+        if (attempt < maxAttempts) {
+          console.log(`Iframe not found. Retrying attempt ${attempt + 1}...`);
+          await page.reload({ waitUntil: "networkidle2" });
+        } else {
+          throw new Error("Iframe not found after multiple attempts.");
+        }
+      }
+    }
+
+    // Get video source link if iframe is found
     const linkToVideo = await iframe.evaluate((el) => el.src);
 
     // Open the iframe's video page
