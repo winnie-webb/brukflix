@@ -5,6 +5,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { MdError } from "react-icons/md";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import fetchStreamData from "./fetchStreamData";
 
 const SeriesStream = () => {
   const path = usePathname();
@@ -24,33 +25,11 @@ const SeriesStream = () => {
   const [currentSeason, setCurrentSeason] = useState(0); // Index of selected season
   const [currentPage, setCurrentPage] = useState(1); // For episode pagination
   const episodesPerPage = 5; // Limit episodes per page
-
   useEffect(() => {
-    const fetchStreamData = async () => {
-      try {
-        const response = await fetch("/api/stream/series", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url }),
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch stream data");
-        }
-
-        const data = await response.json();
-        setStreamData(data.streamContent);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStreamData();
+    fetchStreamData(url, setStreamData, setLoading, setError);
   }, [url]);
 
+  // Render loading state
   if (loading) {
     return (
       <div className="flex gap-2 items-center justify-center min-h-screen bg-black">
@@ -62,12 +41,15 @@ const SeriesStream = () => {
     );
   }
 
-  if (error) {
+  // Handle case when there's an error or empty streamData
+  if (error || !streamData || (!streamData.title && !streamData.videoURL)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="text-center">
           <MdError className="text-red-600 text-6xl mx-auto mb-4" />
-          <p className="text-red-500 text-xl font-semibold">{error}</p>
+          <p className="text-red-500 text-xl font-semibold">
+            {error || "No stream data available. Please try again later."}
+          </p>
         </div>
       </div>
     );
@@ -90,19 +72,46 @@ const SeriesStream = () => {
     }
   };
 
-  const handleSeasonChange = (e) => {
-    setCurrentSeason(e.target.value);
-    setCurrentPage(1); // Reset to first page on season change
+  const handleSeasonChange = async (e) => {
+    const selectedSeason = Number(e.target.value);
+    setCurrentSeason(selectedSeason);
+    setCurrentPage(1); // Reset pagination to page 1 when changing seasons
+
+    const currentSeasonURL = `${
+      streamData.seriesContent.seasonsLinks[selectedSeason].split("?")[0]
+    }?s=${selectedSeason + 1}`;
+
+    try {
+      // Fetch data for the selected season
+      const response = await fetch("/api/stream/series/season", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: currentSeasonURL }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch stream data for the selected season");
+      }
+
+      const data = await response.json();
+
+      // Update streamData with new season episodes
+      setStreamData((prevData) => ({
+        ...prevData,
+        seriesContent: {
+          ...prevData.seriesContent,
+          episodesLinks: data.episodesLinks, // Update episodes for the selected season
+        },
+      }));
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
     <div className="bg-black min-h-screen text-white">
-      {!streamData && (
-        <p className="text-white text-3xl h-[100vh] flex items-center justify-center">
-          Please check your internet connection and refresh...
-        </p>
-      )}
-
       {/* Poster and Title */}
       <div
         className="relative w-full h-[80vh] bg-cover bg-center"
@@ -136,6 +145,7 @@ const SeriesStream = () => {
             }}
           />
         </div>
+
         {/* Dropdown for Seasons */}
         <div className="mb-6 mt-3">
           <label htmlFor="season-select" className="text-lg font-semibold">
@@ -147,7 +157,7 @@ const SeriesStream = () => {
             onChange={handleSeasonChange}
             value={currentSeason}
           >
-            {seriesContent.seasonsLinks.map((seasonLink, index) => (
+            {seriesContent.seasonsLinks.map((_, index) => (
               <option key={index} value={index}>
                 Season {index + 1}
               </option>
@@ -160,12 +170,13 @@ const SeriesStream = () => {
         <div className="space-y-4">
           {episodesToDisplay.map((episodeLink, index) => (
             <Link
-              href={`/stream/series${episodeLink}`}
+              href={`/stream/series${episodeLink}`} // Make sure to use the correct episode link
               key={index}
               className="block"
             >
               <div className="bg-gray-800 hover:bg-gray-700 p-4 rounded-md">
-                Episode {index + 1 + (currentPage - 1) * episodesPerPage}
+                Episode {(currentPage - 1) * episodesPerPage + index + 1}{" "}
+                {/* Adjust episode number */}
               </div>
             </Link>
           ))}

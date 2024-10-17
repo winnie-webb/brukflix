@@ -1,23 +1,6 @@
 import puppeteer from "puppeteer";
 
 export default async function getStream(url, mediaType = "") {
-  const MAX_RETRIES = 3;
-  const WAIT_TIME = 5000;
-
-  // Retry logic for waiting on the iframe
-  const waitForIframe = async (page, retries) => {
-    try {
-      return await page.waitForSelector("iframe", { timeout: 5000 });
-    } catch (error) {
-      if (retries > 0) {
-        console.warn(`Retrying... ${retries} attempts left.`);
-        await new Promise((res) => setTimeout(res, WAIT_TIME)); // Wait before retrying
-        return waitForIframe(page, retries - 1); // Retry
-      }
-      throw new Error("Iframe not found after multiple attempts");
-    }
-  };
-
   try {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
@@ -62,7 +45,7 @@ export default async function getStream(url, mediaType = "") {
     }
 
     // Retry to find the iframe up to 3 times if needed
-    const iframe = await waitForIframe(page, MAX_RETRIES);
+    const iframe = await page.waitForSelector("iframe", { timeout: 10000 });
 
     // Get video source link
     const linkToVideo = await iframe.evaluate((el) => el.src);
