@@ -1,8 +1,7 @@
-import puppeteer from "puppeteer";
-
+import getBrowser from "../utils/getBrowser";
 export default async function getStream(url, mediaType = "") {
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await getBrowser();
     const page = await browser.newPage();
     const streamContent = {};
 

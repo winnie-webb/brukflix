@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
 import * as cheerio from "cheerio";
 import axios from "axios";
+import getBrowser from "../utils/getBrowser";
 
 export async function POST(req) {
   const { searchTerm } = await req.json();
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await getBrowser();
     const page = await browser.newPage();
 
     // Block unnecessary resources
