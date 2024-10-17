@@ -44,6 +44,6 @@ export default function useFetchGenres(mediaType) {
     };
 
     fetchAllGenres();
-  }, [genres]);
+  }, [genres, mediaType]);
   return { movies, loading, error, genres };
 }
