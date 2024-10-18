@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { AiOutlineMenu, AiOutlineUser, AiOutlineClose } from "react-icons/ai";
+import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import SearchBar from "./SearchBar";
 import { usePathname } from "next/navigation";
 
@@ -91,7 +91,6 @@ export default function Navbar() {
 
       {/* Right Section: Profile and Menu */}
       <div className="flex items-center space-x-6">
-        <AiOutlineUser className="text-2xl cursor-pointer" />
         <button onClick={toggleMenu} aria-label="Toggle Menu">
           {menuOpen ? (
             <AiOutlineClose className="text-2xl" />
