@@ -49,7 +49,9 @@ const MoviesStream = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({
+            url: url ? url : "https://ww1.goojara.to/m9Wv86",
+          }),
         });
         if (!response.ok) {
           throw new Error("Failed to fetch stream data");
