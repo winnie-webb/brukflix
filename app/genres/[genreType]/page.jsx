@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 const Genre = () => {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
   const genre = window.location.href.split("/")[4];
 
   useEffect(() => {
@@ -20,7 +21,9 @@ const Genre = () => {
 
   return (
     <div className="p-4 md:p-20 min-h-[80vh]">
-      <h1 className="text-3xl font-bold mb-8">{genre.toUpperCase()}</h1>
+      {!isLoading && (
+        <h1 className="text-3xl font-bold mb-8">{genre.toUpperCase()}</h1>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-6">
         {isLoading
           ? Array(8)
