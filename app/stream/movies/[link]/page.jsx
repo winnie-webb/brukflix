@@ -22,10 +22,15 @@ const MoviesStream = () => {
       () => setLoadingInfo("Almost there...🙄"),
       6000
     );
+    const timeout4 = setTimeout(
+      () => setLoadingInfo("One more second...💀"),
+      8000
+    );
     return () => {
       clearTimeout(timeout1); // Clean up timers on component unmount
       clearTimeout(timeout2);
       clearTimeout(timeout3);
+      clearTimeout(timeout4);
     };
   }, []);
   const [streamData, setStreamData] = useState({
