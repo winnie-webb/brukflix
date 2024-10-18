@@ -9,6 +9,7 @@ const MoviesStream = () => {
   const path = usePathname();
   const url = `https://ww1.goojara.to/${path.split("/")[3]}`;
   const [loadingInfo, setLoadingInfo] = useState("Getting video data...");
+
   useEffect(() => {
     const timeout1 = setTimeout(
       () => setLoadingInfo("Rendering video and content"),
@@ -33,6 +34,7 @@ const MoviesStream = () => {
       clearTimeout(timeout4);
     };
   }, []);
+
   const [streamData, setStreamData] = useState({
     title: "",
     desc: "",
@@ -41,6 +43,7 @@ const MoviesStream = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   useEffect(() => {
     const fetchStreamData = async () => {
       try {
@@ -59,6 +62,18 @@ const MoviesStream = () => {
 
         const data = await response.json();
         setStreamData(data.streamContent);
+
+        // Check if streamContent contains all necessary fields
+        if (
+          !data.streamContent ||
+          !data.streamContent.title ||
+          !data.streamContent.desc ||
+          !data.streamContent.posterLink ||
+          !data.streamContent.videoURL
+        ) {
+          // If fields are missing, refresh the page
+          window.location.reload();
+        }
       } catch (error) {
         setError(error.message);
       } finally {
