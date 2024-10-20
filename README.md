@@ -17,4 +17,4 @@ BrukFlix is a movie streaming app designed to mimic popular platforms like Netfl
 ### Installation and Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/brukflix.git
+   git clone https://github.com/winnie-webb/brukflix.git
