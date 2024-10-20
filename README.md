@@ -1,9 +1,4 @@
 
----
-
-### 2. **BrukFlix - Movie Streaming App**
-
-```markdown
 ## BrukFlix - Movie Streaming App
 
 ### Description
