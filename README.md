@@ -14,7 +14,3 @@ BrukFlix is a movie streaming app designed to mimic popular platforms like Netfl
 - **Frontend**: React, Tailwind CSS
 - **Backend**: Node.js, Puppeteer for scraping
 
-### Installation and Setup
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/winnie-webb/brukflix.git
